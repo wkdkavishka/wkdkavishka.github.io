@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://wkdkavishka.vercel.app
+
+# Sitemaps
+Sitemap: https://wkdkavishka.vercel.app/sitemap.xml
