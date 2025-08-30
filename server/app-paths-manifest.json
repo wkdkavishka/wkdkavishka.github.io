@@ -1,4 +1,7 @@
 {
+  "/IRS-Calculate_Inner_restlessnes_score/page": "app/IRS-Calculate_Inner_restlessnes_score/page.js",
+  "/IRS-Calculate_Inner_restlessnes_score/results/page": "app/IRS-Calculate_Inner_restlessnes_score/results/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/page": "app/page.js"
 }
