@@ -1,11 +1,28 @@
-# Cache static assets for 1 week
+# Cache static assets for 1 year (immutable)
 /_next/static/*
-  Cache-Control: public, max-age=604800, immutable
+  Cache-Control: public, max-age=31536000, immutable
 
-# Cache images for 1 week
+# Cache CSS and JS files for 1 year (immutable)
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache images for 1 year (immutable)
 /images/*
-  Cache-Control: public, max-age=604800, immutable
+  Cache-Control: public, max-age=31536000, immutable
 
-# Default cache control for other files
+# Cache favicons and other static assets
+/favicon.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+/site.webmanifest
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache other static files for 1 week
 /*
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=604800, must-revalidate
