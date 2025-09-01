@@ -1,7 +1,7 @@
 {
     "name": "WKDKavishka",
     "short_name": "WKDKavishka",
-    "description": "Personal portfolio and blog of WKDKavishka",
+    "description": "Personal portfolio of WKDKavishka",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
