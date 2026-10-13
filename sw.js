@@ -1,6 +1,6 @@
 // public/sw.js
 //! deploy() stamps a fresh CACHE_NAME into out/sw.js on every deploy (stampCacheName in scripts/deploy.ts); keep this declaration on one line
-const CACHE_NAME = `pwa-cache-2026-10-13T18:38:09.320Z`;
+const CACHE_NAME = `pwa-cache-2026-10-13T19:26:21.489Z`;
 const OFFLINE_PAGE = "/offline.html";
 
 const PRECACHE_ASSETS = [
