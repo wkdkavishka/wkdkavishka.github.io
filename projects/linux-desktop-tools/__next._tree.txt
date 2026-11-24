@@ -1,7 +1,7 @@
-:HL["/_next/static/chunks/0d0chqxw6vyty.css","style"]
+:HL["/_next/static/chunks/0gqh3lfhl9kbx.css","style"]
 :HL["/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/_next/static/media/c0680f1bdb3a2e90-s.p.1gsd1jahc5dg_.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 3:[["children",{"s":"__PAGE__","h":160}]]
 2:[["children",{"s":{"n":"slug","t":"d","k":"linux-desktop-tools","s":[]},"h":65632,"c":"$Q3"}]]
 1:[["children",{"s":"projects","h":131168,"c":"$Q2"}]]
-0:{"b":"4A8BJdW66Rh7UqEBl3eHM","t":{"t":{"s":"","h":131152,"c":"$Q1"}}}
+0:{"b":"p3JoL1nxBMjh7_SG4VAka","t":{"t":{"s":"","h":131152,"c":"$Q1"}}}
