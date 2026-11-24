@@ -9,6 +9,40 @@ const MANIFEST_URL = new URL("/__pwa_manifest__", self.location.origin).href;
 const CLIENT_URL = new URL("/__pwa_clients__/", self.location.origin).href;
 const OFFLINE_PAGE = "/offline.html";
 
+let installProgress;
+let lastProgressReport = -Infinity;
+let progressTimer;
+
+function sendInstallProgress(client, progress) {
+  try {
+    client.postMessage({ type: "PWA_INSTALL_PROGRESS", ...progress });
+  } catch {
+    // A closed window must not interrupt installation.
+  }
+}
+
+function reportInstallProgress() {
+  if (!installProgress) return;
+  const now = Date.now();
+  const delay = 250 - (now - lastProgressReport);
+  // Flush the latest snapshot even if the next file takes much longer.
+  if (delay > 0) {
+    progressTimer ??= setTimeout(() => {
+      progressTimer = undefined;
+      reportInstallProgress();
+    }, delay);
+    return;
+  }
+  clearTimeout(progressTimer);
+  progressTimer = undefined;
+  lastProgressReport = now;
+  const progress = installProgress;
+  // The installing worker does not control the app's windows yet.
+  void self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+    for (const client of clients) sendInstallProgress(client, progress);
+  }).catch(() => {});
+}
+
 async function readManifest(cacheName) {
   const cache = await caches.open(cacheName);
   const response = await cache.match(MANIFEST_URL);
@@ -95,7 +129,10 @@ async function installVersion() {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120000);
   let cursor = 0;
+  let saved = 0;
   let failure;
+  installProgress = { saved, total: assets.length };
+  reportInstallProgress();
   const download = async () => {
     while (!controller.signal.aborted && cursor < assets.length) {
       const asset = assets[cursor++];
@@ -123,6 +160,8 @@ async function installVersion() {
         const headers = new Headers(response.headers);
         for (const name of ["content-encoding", "content-length", "vary"]) headers.delete(name);
         await cache.put(new URL(asset.url, self.location.origin), new Response(bytes, { headers }));
+        installProgress = { saved: ++saved, total: assets.length };
+        reportInstallProgress();
       } catch (error) {
         failure ??= error;
         controller.abort();
@@ -137,6 +176,9 @@ async function installVersion() {
     await caches.delete(CACHE_NAME);
     throw error;
   } finally {
+    installProgress = undefined;
+    clearTimeout(progressTimer);
+    progressTimer = undefined;
     clearTimeout(timeout);
   }
 }
@@ -242,6 +284,8 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") {
     event.waitUntil(self.skipWaiting());
+  } else if (event.data?.type === "PWA_INSTALL_STATUS" && installProgress && event.source?.type === "window") {
+    sendInstallProgress(event.source, installProgress);
   } else if (event.data?.type === "PWA_STATUS" && event.source?.id) {
     event.waitUntil((async () => {
       const pageVersion = event.data.version;
