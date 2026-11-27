@@ -233,24 +233,49 @@ function optimizedImagePath(request, manifest) {
   return manifest.assets.find((asset) => asset.url === image.pathname && asset.sha256)?.url ?? null;
 }
 
+async function portfolioAsset(url, hash) {
+  // The first iframe navigation may have no client ID. Use the artifact's
+  // digest rather than the tab mapping, which may point to a newer deployment.
+  const path = new URL(url.pathname, self.location.origin);
+  const names = [CACHE_NAME, ...(await caches.keys()).filter((name) =>
+    name !== CACHE_NAME && name.startsWith(CACHE_PREFIX))];
+  for (const name of names) {
+    const manifest = await readManifest(name);
+    if (!manifest?.activated || !manifest.assets.some((asset) =>
+      asset.url === path.pathname && asset.sha256 === hash)) continue;
+    const response = await caches.match(path, { cacheName: name });
+    if (response) return response;
+  }
+  return null;
+}
+
 async function serveRequest(event) {
   const { request } = event;
   const navigation = request.mode === "navigate";
+  const url = new URL(request.url);
+  const hash = url.searchParams.get("v");
+  const versionedPortfolioAsset =
+    ["/portfolio-document.html", "/portfolio.pdf"].includes(url.pathname) && /^[a-f0-9]{64}$/.test(hash ?? "");
   let cache;
   let imageFallback;
   try {
-    const cacheName = navigation ? CACHE_NAME : await clientCacheName(event.clientId);
-    if (navigation) {
-      // Storage pressure must not turn a working online page into a failed load.
-      await pinClient(event.resultingClientId, CACHE_NAME).catch(() => {});
-    }
-    const manifest = await readManifest(cacheName);
-    cache = await caches.open(cacheName);
-    imageFallback = manifest ? optimizedImagePath(request, manifest) : null;
-    const path = manifest ? assetPath(request, manifest) : null;
-    if (path) {
-      const cached = await cache.match(new URL(path, self.location.origin));
+    if (versionedPortfolioAsset) {
+      const cached = await portfolioAsset(url, hash);
       if (cached) return cached;
+    } else {
+      const cacheName = navigation ? CACHE_NAME : await clientCacheName(event.clientId);
+      if (navigation) {
+        // Storage pressure must not turn a working online page into a failed load.
+        await pinClient(event.resultingClientId, cacheName).catch(() => {});
+      }
+      const manifest = await readManifest(cacheName);
+      cache = await caches.open(cacheName);
+      imageFallback = manifest ? optimizedImagePath(request, manifest) : null;
+      const path = manifest ? assetPath(request, manifest) : null;
+      if (path) {
+        const cached = await cache.match(new URL(path, self.location.origin));
+        if (cached) return cached;
+      }
     }
   } catch (error) {
     console.warn("[PWA] Cache unavailable; trying the network", error);
